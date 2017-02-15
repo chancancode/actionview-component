@@ -44,11 +44,7 @@ class ComponentsTest < ActionView::TestCase
   test "rendering a component with keyword arguments" do
     class ::GreetingsComponent < ActionView::Component
       def initialize(first_name:, middle_name: nil, last_name:, website: nil, social_media_handle: nil)
-        @first_name = first_name
-        @middle_name = middle_name
-        @last_name = last_name
-        @website = website
-        @social_media_handle = social_media_handle
+        super
       end
 
       def full_name
@@ -98,11 +94,7 @@ class ComponentsTest < ActionView::TestCase
   test "rendering a component with keyword arguments from another template" do
     class ::GreetingsComponent < ActionView::Component
       def initialize(first_name:, middle_name: nil, last_name:, website: nil, social_media_handle: nil)
-        @first_name = first_name
-        @middle_name = middle_name
-        @last_name = last_name
-        @website = website
-        @social_media_handle = social_media_handle
+        super
       end
 
       def full_name
@@ -145,6 +137,34 @@ class ComponentsTest < ActionView::TestCase
     assert_dom_equal <<-HTML
       <h1>Outside</h1>
 
+      <div>
+          Hello, David Heinemeier Hansson!
+      </div>
+      <div>
+          Hello, <a href="https://echochamber.com/@chancancode">Godfrey Chan</a>!
+      </div>
+      <div>
+          Hello, <a href="https://tenderlovemaking.com">Aaron Patterson</a>!
+      </div>
+    HTML
+  end
+
+  test "rendering a template-only component" do
+    register_template "components/greetings.html.erb", <<-ERB
+      <div>
+        <% if @url %>
+          Hello, <a href="<%= @url %>"><%= @full_name %></a>!
+        <% else %>
+          Hello, <%= @full_name %>!
+        <% end %>
+      </div>
+    ERB
+
+    render component: "greetings", full_name: "David Heinemeier Hansson"
+    render component: "greetings", full_name: "Godfrey Chan", url: "https://echochamber.com/@chancancode"
+    render component: "greetings", full_name: "Aaron Patterson", url: "https://tenderlovemaking.com"
+
+    assert_dom_equal <<-HTML
       <div>
           Hello, David Heinemeier Hansson!
       </div>
